@@ -6,6 +6,9 @@
 #include <QTime>
 #include <QLabel>
 #include <QPushButton>
+#include <QSlider>
+#include <QLabel>
+#include <QHBoxLayout>
 
 class Ecg : public QWidget {
 
@@ -39,4 +42,14 @@ class Ecg : public QWidget {
 		QPushButton *stopBtn;
 		bool stop_b;
 		QTimer *timer;
+		QSlider *slider;
+		QLabel *label1;
+		QLabel *ms1;
+		QLabel *ms2;
+		QLabel *ms3;
+		QLabel *ms4;
+		QLabel *ms5;
+		QLabel *ms6;
+		QLabel *ms7;
+		QHBoxLayout *hbox;
 };

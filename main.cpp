@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <QThread>
 #include <thread>
+#include <QSlider>
+#include <QLabel>
 
 void	Ecg::stop() {
 	nums.clear();
@@ -56,7 +58,7 @@ void	Ecg::start() {
 
 Ecg::Ecg(std::list<int> nums, QWidget *parent) : QWidget(parent), count(0), size(static_cast<int>(nums.size())), h(900), w(1300), sec(0), nums(nums), start_b(false), stop_b(false), data(nums), timer(new QTimer(this))
 {
-	QHBoxLayout *hbox = new QHBoxLayout(this);
+	hbox = new QHBoxLayout(this);
 	hbox->setSpacing(5);
 
 	startBtn = new QPushButton("Play", this);
@@ -65,18 +67,51 @@ Ecg::Ecg(std::list<int> nums, QWidget *parent) : QWidget(parent), count(0), size
 	connect(startBtn, &QPushButton::clicked, this, &Ecg::start);
 
 	stopBtn = new QPushButton("Stop", this);
-	hbox->addWidget(stopBtn, 0, Qt::AlignLeft | Qt::AlignTop);
+	hbox->addWidget(stopBtn, 1, Qt::AlignLeft | Qt::AlignTop);
 
 	connect(stopBtn, &QPushButton::clicked, this, &Ecg::stop);
 
 	label = new QLabel("", this);
-	hbox->addWidget(label, 0, Qt::AlignRight | Qt::AlignBottom);
+	//hbox->addWidget(label, 10, Qt::AlignLeft | Qt::AlignTop);
+
+	label->move(200, 8);
 
 	QTime qtime = QTime(0, 0, sec, 0);
 	QString stime = qtime.toString();
 	label->setText(stime);
 
 	startTimer(1000);
+
+	slider = new QSlider(Qt::Horizontal, this);
+	slider->setRange(1, 110);
+	slider->setValue(50);
+	hbox->addWidget(slider, 0, Qt::AlignRight | Qt::AlignBottom);
+
+	label1 = new QLabel("50", this);
+	QLabel *labelp = new QLabel("%", this);
+	hbox->addWidget(label1, 0, Qt::AlignRight | Qt::AlignBottom);
+	hbox->addWidget(labelp, 0, Qt::AlignRight | Qt::AlignBottom);
+
+	//   connect(slider, &QSlider::valueChanged, label,
+	//     static_cast<void (QLabel::*)(int)>(&QLabel::setNum));
+
+	connect(slider, &QSlider::valueChanged, label1, qOverload<int>(&QLabel::setNum));
+
+	ms4 = new QLabel("0", this);
+	ms1 = new QLabel(std::to_string((40000/4) * 3).c_str(), this);
+	ms2 = new QLabel(std::to_string((40000/4) * 2).c_str(), this);
+	ms3 = new QLabel(std::to_string((40000/4)).c_str(), this);
+	ms5 = new QLabel(std::to_string((40000/4) * -1).c_str(), this);
+	ms6 = new QLabel(std::to_string((40000/4) * -2).c_str(), this);
+	ms7 = new QLabel(std::to_string((40000/4) * -3).c_str(), this);
+	ms4->move(5, h/2 - 30);
+	ms1->move(5, h/2 - ((h/2)/4) * 3 - 30);
+	ms2->move(5, h/2 - ((h/2)/4) * 2 - 30);
+	ms3->move(5, h/2 - ((h/2)/4) - 30);
+	ms5->move(5, h/2 + ((h/2)/4) - 30);
+	ms6->move(5, h/2 + ((h/2)/4) * 2 - 30);
+	ms7->move(5, h/2 + ((h/2)/4) * 3 - 30);
+	//hbox->addWidget(ms4, 0, Qt::AlignLeft | Qt::AlignBottom);
 
 	//auto *hbox = new QHBoxLayout(this);
 	//hbox->setSpacing(5);
@@ -113,7 +148,19 @@ void Ecg::drawEcg(QPainter *qp) {
 	qp->drawLine(10, (h/2)/2 + h/2, w - 10, (h/2)/2 + h/2);
 	qp->drawLine(10, ((h/2)/4) * 3 + h/2, w - 10, ((h/2)/4) * 3 + h/2);
 
+
+	int zoom = 80000 * (atoi(label1->text().toStdString().c_str())/static_cast<float>(100));
+
+	ms1->setText(std::to_string((zoom/4) * 3).c_str());
+	ms2->setText(std::to_string((zoom/4) * 2).c_str());
+	ms3->setText(std::to_string((zoom/4)).c_str());
+	ms5->setText(std::to_string((zoom/4) * -1).c_str());
+	ms6->setText(std::to_string((zoom/4) * -2).c_str());
+	ms7->setText(std::to_string((zoom/4) * -3).c_str());
+
 	if (start_b) {	
+
+		//std::cout << (atoi(label1->text().toStdString().c_str())/100) << std::endl;
 		if (static_cast<int>(nums.size()) <= ((size /4) / w) * w && !stop_b) {
 			pause();
 			return ;
@@ -149,9 +196,9 @@ void Ecg::drawEcg(QPainter *qp) {
 			}
 			m = sum / ((size / 4) / w);
 			if (m >= 0)
-				yb = h/2 - (m /(40000 / (h/2)));
+				yb = h/2 - (m /(zoom / (h/2)));
 			else
-				yb = h/2 + ((m * -1)/(40000 / (h/2)));
+				yb = h/2 + ((m * -1)/(zoom / (h/2)));
 			if (i != 0)
 				qp->drawLine(xa, ya, xb, yb);
 			xa = xb;
@@ -174,9 +221,9 @@ void Ecg::timerEvent(QTimerEvent *e) {
 
 	Q_UNUSED(e);
 	if (!stop_b && !start_b) {
-	   QTime qtime = QTime(0, 0, sec, 0);
-	   QString stime = qtime.toString();
-	   label->setText(stime);
+		QTime qtime = QTime(0, 0, sec, 0);
+		QString stime = qtime.toString();
+		label->setText(stime);
 	}
 	else if (!stop_b) {
 		QTime qtime = QTime(0, 0, ++sec, 0);
