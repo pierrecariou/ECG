@@ -13,6 +13,8 @@ Description de l’application :
 
 --------Compilation---------
 
+- Installer qt si nécessaire
 - Sur systeme UNIX lancer l'exécutable ECG
 - Sinon générer un Makefile avec : qmake -unix/macx/win32 ; qmake -makefile
 - Puis make && ./ECG
+- le fichier data_ecg/ecg.txt doit bien être présent
