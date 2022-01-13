@@ -2,41 +2,35 @@
 
 Ecg::Ecg(std::list<int> data, QWidget *parent) : QWidget(parent), count(0), h(900), w(1300), sec(0), start_b(false), stop_b(false), data(data), size(static_cast<int>(data.size())), timer(new QTimer(this))
 {
+	//set layout
 	hbox = new QHBoxLayout(this);
 	hbox->setSpacing(5);
-
+	//start button
 	startBtn = new QPushButton("Play", this);
 	hbox->addWidget(startBtn, 0, Qt::AlignLeft | Qt::AlignTop);
-
 	connect(startBtn, &QPushButton::clicked, this, &Ecg::start);
-
+	//stop button
 	stopBtn = new QPushButton("Stop", this);
 	hbox->addWidget(stopBtn, 1, Qt::AlignLeft | Qt::AlignTop);
-
 	connect(stopBtn, &QPushButton::clicked, this, &Ecg::stop);
-
+	//timer
 	label = new QLabel("", this);
-
 	label->move(200, 8);
-
 	QTime qtime = QTime(0, 0, sec, 0);
 	QString stime = qtime.toString();
 	label->setText(stime);
-
 	startTimer(1000);
-
+	//zoom
 	slider = new QSlider(Qt::Horizontal, this);
 	slider->setRange(0, 99);
 	slider->setValue(50);
 	hbox->addWidget(slider, 0, Qt::AlignRight | Qt::AlignBottom);
-
 	label1 = new QLabel("50", this);
 	labelp = new QLabel("%", this);
 	hbox->addWidget(label1, 0, Qt::AlignRight | Qt::AlignBottom);
 	hbox->addWidget(labelp, 0, Qt::AlignRight | Qt::AlignBottom);
-
 	connect(slider, &QSlider::valueChanged, label1, qOverload<int>(&QLabel::setNum));
-
+	//y values
 	ms4 = new QLabel("0", this);
 	ms1 = new QLabel(std::to_string((40000/4) * 3).c_str(), this);
 	ms2 = new QLabel(std::to_string((40000/4) * 2).c_str(), this);
@@ -51,7 +45,7 @@ Ecg::Ecg(std::list<int> data, QWidget *parent) : QWidget(parent), count(0), h(90
 	ms5->move(5, h/2 + ((h/2)/4) - 30);
 	ms6->move(5, h/2 + ((h/2)/4) * 2 - 30);
 	ms7->move(5, h/2 + ((h/2)/4) * 3 - 30);
-
+	
 	transformData();
 }
 
@@ -96,7 +90,7 @@ void	Ecg::start() {
 	timer->start(6000 / w);
 }
 
-void	Ecg::transformData() {
+void	Ecg::transformData() { //fill nums
 	nums.clear();
 	int c = 0;
 	float sum = 0;
@@ -116,10 +110,10 @@ void	Ecg::transformData() {
 }
 
 void Ecg::drawEcg(QPainter *qp) {
+	//draw horizontal lines
 	QPen pen(Qt::gray, 5, Qt::SolidLine);
 	qp->setPen(pen);
 	qp->drawLine(10, h/2, w - 10, h/2);
-
 	pen.setWidth(1);
 	qp->setPen(pen);
 	qp->drawLine(10, (h/2)/4, w - 10, (h/2)/4);
@@ -128,10 +122,8 @@ void Ecg::drawEcg(QPainter *qp) {
 	qp->drawLine(10, (h/2)/4 + h/2, w - 10, (h/2)/4 + h/2);
 	qp->drawLine(10, (h/2)/2 + h/2, w - 10, (h/2)/2 + h/2);
 	qp->drawLine(10, ((h/2)/4) * 3 + h/2, w - 10, ((h/2)/4) * 3 + h/2);
-
-
+	//if zoom modified
 	int zoom = 80000 * (1 - (atoi(label1->text().toStdString().c_str())/static_cast<float>(100)));
-
 	ms1->setText(std::to_string((zoom/4) * 3).c_str());
 	ms2->setText(std::to_string((zoom/4) * 2).c_str());
 	ms3->setText(std::to_string((zoom/4)).c_str());
@@ -139,6 +131,7 @@ void Ecg::drawEcg(QPainter *qp) {
 	ms6->setText(std::to_string((zoom/4) * -2).c_str());
 	ms7->setText(std::to_string((zoom/4) * -3).c_str());
 
+	//draw ECG
 	if (start_b) {	
 		if (static_cast<int>(nums.size()) <= (size_nums / 4) && !stop_b) {
 			pause();
