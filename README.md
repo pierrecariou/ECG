@@ -9,13 +9,7 @@ Description de l’application :
 
  - Fonction de correction de la dérive du signal en Y en faisant une moyenne sur fenêtre glissante (par exemple). Cette dernière est réglable par l’utilisateur.
 
- - Fonction de gain/zoom vertical des données au choix :
-
- -          Zoom fixe
-
- -          Auto zoom
-
- -          Réglage par un contrôle UI
+ - Fonction de gain/zoom vertical des données:
 
 --------Compilation---------
 
